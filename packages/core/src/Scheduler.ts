@@ -137,73 +137,73 @@ export class Scheduler {
 		}
 	}
 
-    /**
-     * Find available time slots for booking
-     */
-    async findAvailableSlots(options: FindSlotsOptions): Promise<TimeSlot[]> {
-        const increment = options.incrementMinutes ?? this.defaultIncrement;
-        const usableDuration = options.duration.totalMinutes - (options.duration.bufferMinutes ?? 0);
-        
-        if (increment <= 0 || usableDuration <= 0 || new Date(options.startDate) >= new Date(options.endDate)) {
-            return [];
-        }
+	/**
+	 * Find available time slots for booking
+	 */
+	async findAvailableSlots(options: FindSlotsOptions): Promise<TimeSlot[]> {
+		const increment = options.incrementMinutes ?? this.defaultIncrement;
+		const usableDuration = options.duration.totalMinutes - (options.duration.bufferMinutes ?? 0);
 
-        // Get all providers or filter to specific ones
-        const allProviders = await this.storage.getAllProviders();
-        const availableProviders = options.providerIds 
-            ? allProviders.filter(p => options.providerIds!.includes(p.id))
-            : allProviders;
+		if (increment <= 0 || usableDuration <= 0 || new Date(options.startDate) >= new Date(options.endDate)) {
+			return [];
+		}
 
-        if (availableProviders.length === 0) {
-            return [];
-        }
+		// Get all providers or filter to specific ones
+		const allProviders = await this.storage.getAllProviders();
+		const availableProviders = options.providerIds
+			? allProviders.filter(p => options.providerIds!.includes(p.id))
+			: allProviders;
 
-        // Get all appointments and blocked times
-        const appointments = await this.storage.getAllAppointments();
-        const blockedTimes = await this.storage.getAllBlockedTimes();
+		if (availableProviders.length === 0) {
+			return [];
+		}
 
-        const slots: TimeSlot[] = [];
-        let current = new Date(options.startDate);
-        const end = new Date(options.endDate);
+		// Get all appointments and blocked times
+		const appointments = await this.storage.getAllAppointments();
+		const blockedTimes = await this.storage.getAllBlockedTimes();
 
-        while (current < end) {
-            const slotEnd = new Date(current.getTime() + options.duration.totalMinutes * 60000);
-            
-            if (slotEnd > end) break;
+		const slots: TimeSlot[] = [];
+		let current = new Date(options.startDate);
+		const end = new Date(options.endDate);
 
-            const validProviders = availableProviders.filter(provider => {
-                // Check appointments (provider-specific or global)
-                for (const apt of appointments) {
-                    if (apt.providerId !== provider.id && apt.providerId !== undefined) continue;
-                    const aptStart = new Date(apt.startTime);
-                    const aptEnd = new Date(apt.endTime);
-                    if (!(slotEnd <= aptStart || current >= aptEnd)) return false;
-                }
+		while (current < end) {
+			const slotEnd = new Date(current.getTime() + options.duration.totalMinutes * 60000);
 
-                // Check blocked times (provider-specific or global)
-                for (const block of blockedTimes) {
-                    if (block.providerId !== provider.id && block.providerId !== undefined) continue;
-                    const blockStart = new Date(block.startTime);
-                    const blockEnd = new Date(block.endTime);
-                    if (!(slotEnd <= blockStart || current >= blockEnd)) return false;
-                }
+			if (slotEnd > end) break;
 
-                return true;
-            });
+			const validProviders = availableProviders.filter(provider => {
+				// Check appointments (provider-specific or global)
+				for (const apt of appointments) {
+					if (apt.providerId !== provider.id && apt.providerId !== undefined) continue;
+					const aptStart = new Date(apt.startTime);
+					const aptEnd = new Date(apt.endTime);
+					if (!(slotEnd <= aptStart || current >= aptEnd)) return false;
+				}
 
-            if (validProviders.length > 0) {
-                slots.push({
-                    startTime: current.toISOString(),
-                    endTime: slotEnd.toISOString(),
-                    providerIds: validProviders.map(p => p.id)
-                });
-            }
+				// Check blocked times (provider-specific or global)
+				for (const block of blockedTimes) {
+					if (block.providerId !== provider.id && block.providerId !== undefined) continue;
+					const blockStart = new Date(block.startTime);
+					const blockEnd = new Date(block.endTime);
+					if (!(slotEnd <= blockStart || current >= blockEnd)) return false;
+				}
 
-            current = new Date(current.getTime() + increment * 60000);
-        }
+				return true;
+			});
 
-        return slots;
-    }
+			if (validProviders.length > 0) {
+				slots.push({
+					startTime: current.toISOString(),
+					endTime: slotEnd.toISOString(),
+					providerIds: validProviders.map(p => p.id)
+				});
+			}
+
+			current = new Date(current.getTime() + increment * 60000);
+		}
+
+		return slots;
+	}
 
 	/**
 	 * Create a new appointment

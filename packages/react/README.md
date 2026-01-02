@@ -16,27 +16,27 @@ Note: React 18+ is required as a peer dependency.
 import { useScheduler } from '@makai/scheduler-react';
 
 function AppointmentBooking() {
-  const { scheduler, createAppointment, findAvailableSlots } = useScheduler({
-    providers: [
-      { id: 'dr-a', name: 'Dr. A' },
-      { id: 'dr-b', name: 'Dr. B' }
-    ]
-  });
+	const { scheduler, createAppointment, findAvailableSlots } = useScheduler({
+		providers: [
+			{ id: 'dr-a', name: 'Dr. A' },
+			{ id: 'dr-b', name: 'Dr. B' }
+		]
+	});
 
-  const handleBook = () => {
-    const appointment = createAppointment({
-      startTime: '2026-01-15T10:00:00Z',
-      duration: { totalMinutes: 60, bufferMinutes: 10 },
-      providerId: 'dr-a'
-    });
-    console.log('Booked:', appointment);
-  };
+	const handleBook = () => {
+		const appointment = createAppointment({
+			startTime: '2026-01-15T10:00:00Z',
+			duration: { totalMinutes: 60, bufferMinutes: 10 },
+			providerId: 'dr-a'
+		});
+		console.log('Booked:', appointment);
+	};
 
-  return (
-    <button onClick={handleBook}>
-      Book Appointment
-    </button>
-  );
+	return (
+		<button onClick={handleBook}>
+			Book Appointment
+		</button>
+	);
 }
 ```
 

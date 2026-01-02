@@ -38,25 +38,25 @@ npm install @thunguard/scheduler-core
 import { Scheduler } from '@thunguard/scheduler-core';
 
 const scheduler = new Scheduler({
-  providers: [
-    { id: 'dr-a', name: 'Dr. A' },
-    { id: 'dr-b', name: 'Dr. B' }
-  ]
+	providers: [
+		{ id: 'dr-a', name: 'Dr. A' },
+		{ id: 'dr-b', name: 'Dr. B' }
+	]
 });
 
 // Find available slots
 const slots = scheduler.findAvailableSlots({
-  duration: { totalMinutes: 60, bufferMinutes: 10 },
-  startDate: '2026-01-15T08:00:00Z',
-  endDate: '2026-01-15T17:00:00Z',
-  incrementMinutes: 15
+	duration: { totalMinutes: 60, bufferMinutes: 10 },
+	startDate: '2026-01-15T08:00:00Z',
+	endDate: '2026-01-15T17:00:00Z',
+	incrementMinutes: 15
 });
 
 // Create appointment
 const apt = scheduler.createAppointment({
-  startTime: '2026-01-15T10:30:00Z',
-  duration: { totalMinutes: 60, bufferMinutes: 10 },
-  providerId: 'dr-a'
+	startTime: '2026-01-15T10:30:00Z',
+	duration: { totalMinutes: 60, bufferMinutes: 10 },
+	providerId: 'dr-a'
 });
 ```
 
@@ -70,11 +70,11 @@ npm install @thunguard/scheduler-react @thunguard/scheduler-core
 import { useScheduler } from '@thunguard/scheduler-react';
 
 function BookingApp() {
-  const { createAppointment, findAvailableSlots } = useScheduler({
-    providers: [{ id: 'dr-a', name: 'Dr. A' }]
-  });
+	const { createAppointment, findAvailableSlots } = useScheduler({
+		providers: [{ id: 'dr-a', name: 'Dr. A' }]
+	});
 
-  // Use the scheduling functions...
+	// Use the scheduling functions...
 }
 ```
 
@@ -83,22 +83,22 @@ function BookingApp() {
 ```
 client-scheduling-app/
 ├── packages/
-│   ├── core/              # @thunguard/scheduler-core (headless library)
-│   │   ├── src/
-│   │   │   ├── Scheduler.ts
-│   │   │   ├── types.ts
-│   │   │   └── index.ts
-│   │   └── package.json
-│   │
-│   └── react/             # @thunguard/scheduler-react (React bindings)
-│       ├── src/
-│       │   ├── hooks/
-│       │   │   └── useScheduler.ts
-│       │   └── index.ts
-│       └── package.json
+│	 ├── core/							# @thunguard/scheduler-core (headless library)
+│	 │	 ├── src/
+│	 │	 │	 ├── Scheduler.ts
+│	 │	 │	 ├── types.ts
+│	 │	 │	 └── index.ts
+│	 │	 └── package.json
+│	 │
+│	 └── react/						 # @thunguard/scheduler-react (React bindings)
+│			 ├── src/
+│			 │	 ├── hooks/
+│			 │	 │	 └── useScheduler.ts
+│			 │	 └── index.ts
+│			 └── package.json
 │
-├── examples/              # Usage examples
-└── package.json           # Workspace root
+├── examples/							# Usage examples
+└── package.json					 # Workspace root
 ```
 
 ## 🛠️ Development
