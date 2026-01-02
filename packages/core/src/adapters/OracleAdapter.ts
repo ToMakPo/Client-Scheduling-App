@@ -3,7 +3,8 @@ import type { StorageAdapter, Appointment, BlockedTime, Provider } from '../type
 
 /** Configuration options for Oracle connection pool */
 export interface OracleConfig {
-	/** Oracle connection string or descriptor
+	/** Oracle connection string or descriptor.
+	 * 
 	 * Format: "hostname:port/servicename" or TNS descriptor
 	 */
 	connectString: string;
@@ -27,8 +28,9 @@ export interface OracleConfig {
 	poolTimeout?: number;
 }
 
-/** Oracle storage adapter implementation
- * Provides persistent storage using Oracle Database with connection pooling
+/** Oracle storage adapter implementation.
+ * 
+ * Provides persistent storage using Oracle Database with connection pooling.
  */
 export class OracleAdapter implements StorageAdapter {
 	private config: OracleConfig;
@@ -45,7 +47,7 @@ export class OracleAdapter implements StorageAdapter {
 		};
 	}
 
-	/** Connect to Oracle and create tables if they don't exist */
+	/** Connect to Oracle and create tables if they don't exist. */
 	async connect(): Promise<void> {
 		this.oracledb = await import('oracledb');
 
@@ -65,7 +67,7 @@ export class OracleAdapter implements StorageAdapter {
 		await this.createTables();
 	}
 
-	/** Create database tables with proper indexes */
+	/** Create database tables with proper indexes. */
 	private async createTables(): Promise<void> {
 		if (!this.pool) throw new Error('Pool not initialized');
 
@@ -74,101 +76,103 @@ export class OracleAdapter implements StorageAdapter {
 		try {
 			// Create appointments table
 			await connection.execute(`
-        BEGIN
-          EXECUTE IMMEDIATE 'CREATE TABLE appointments (
-            id VARCHAR2(255) PRIMARY KEY,
-            provider_id VARCHAR2(255),
-            start_time TIMESTAMP NOT NULL,
-            end_time TIMESTAMP NOT NULL,
-            metadata CLOB
-          )';
-        EXCEPTION
-          WHEN OTHERS THEN
-            IF SQLCODE != -955 THEN -- Table already exists
-              RAISE;
-            END IF;
-        END;
-      `);
+				BEGIN
+					EXECUTE IMMEDIATE 'CREATE TABLE appointments (
+						id VARCHAR2(255) PRIMARY KEY,
+						provider_id VARCHAR2(255),
+						start_time TIMESTAMP NOT NULL,
+						end_time TIMESTAMP NOT NULL,
+						metadata CLOB
+					)';
+				EXCEPTION
+					WHEN OTHERS THEN
+						IF SQLCODE != -955 THEN -- Table already exists
+							RAISE;
+						END IF;
+					END;
+			`);
 
-			// Create indexes for appointments
+			// Create indexes for appointments provider
 			await connection.execute(`
-        BEGIN
-          EXECUTE IMMEDIATE 'CREATE INDEX idx_appointments_provider ON appointments(provider_id)';
-        EXCEPTION
-          WHEN OTHERS THEN
-            IF SQLCODE != -955 THEN
-              RAISE;
-            END IF;
-        END;
-      `);
+				BEGIN
+					EXECUTE IMMEDIATE 'CREATE INDEX idx_appointments_provider ON appointments(provider_id)';
+				EXCEPTION
+					WHEN OTHERS THEN
+						IF SQLCODE != -955 THEN 
+							RAISE;
+						END IF;
+					END;
+			`);
 
+			// Create index for start_time
 			await connection.execute(`
-        BEGIN
-          EXECUTE IMMEDIATE 'CREATE INDEX idx_appointments_start_time ON appointments(start_time)';
-        EXCEPTION
-          WHEN OTHERS THEN
-            IF SQLCODE != -955 THEN
-              RAISE;
-            END IF;
-        END;
-      `);
+				BEGIN
+					EXECUTE IMMEDIATE 'CREATE INDEX idx_appointments_start_time ON appointments(start_time)';
+				EXCEPTION
+					WHEN OTHERS THEN
+						IF SQLCODE != -955 THEN 
+							RAISE;
+						END IF;
+					END;
+			`);
 
 			// Create blocked_times table
 			await connection.execute(`
-        BEGIN
-          EXECUTE IMMEDIATE 'CREATE TABLE blocked_times (
-            id VARCHAR2(255) PRIMARY KEY,
-            provider_id VARCHAR2(255),
-            start_time TIMESTAMP NOT NULL,
-            end_time TIMESTAMP NOT NULL,
-            reason VARCHAR2(255)
-          )';
-        EXCEPTION
-          WHEN OTHERS THEN
-            IF SQLCODE != -955 THEN
-              RAISE;
-            END IF;
-        END;
-      `);
+				BEGIN
+					EXECUTE IMMEDIATE 'CREATE TABLE blocked_times (
+						id VARCHAR2(255) PRIMARY KEY,
+						provider_id VARCHAR2(255),
+						start_time TIMESTAMP NOT NULL,
+						end_time TIMESTAMP NOT NULL,
+						reason VARCHAR2(255)
+					)';
+				EXCEPTION
+					WHEN OTHERS THEN
+						IF SQLCODE != -955 THEN 
+							RAISE;
+						END IF;
+					END;
+			`);
 
-			// Create indexes for blocked_times
+			// Create indexes for blocked_times provider
 			await connection.execute(`
-        BEGIN
-          EXECUTE IMMEDIATE 'CREATE INDEX idx_blocked_times_provider ON blocked_times(provider_id)';
-        EXCEPTION
-          WHEN OTHERS THEN
-            IF SQLCODE != -955 THEN
-              RAISE;
-            END IF;
-        END;
-      `);
+				BEGIN
+					EXECUTE IMMEDIATE 'CREATE INDEX idx_blocked_times_provider ON blocked_times(provider_id)';
+				EXCEPTION
+					WHEN OTHERS THEN
+						IF SQLCODE != -955 THEN
+							RAISE;
+						END IF;
+					END;
+			`);
 
+			// Create index for blocked_times start_time
 			await connection.execute(`
-        BEGIN
-          EXECUTE IMMEDIATE 'CREATE INDEX idx_blocked_times_start_time ON blocked_times(start_time)';
-        EXCEPTION
-          WHEN OTHERS THEN
-            IF SQLCODE != -955 THEN
-              RAISE;
-            END IF;
-        END;
-      `);
+				BEGIN
+					EXECUTE IMMEDIATE 'CREATE INDEX idx_blocked_times_start_time ON blocked_times(start_time)';
+				EXCEPTION
+					WHEN OTHERS THEN
+						IF SQLCODE != -955 THEN
+							RAISE;
+						END IF;
+					END;
+			`);
 
 			// Create providers table
 			await connection.execute(`
-        BEGIN
-          EXECUTE IMMEDIATE 'CREATE TABLE providers (
-            id VARCHAR2(255) PRIMARY KEY,
-            name VARCHAR2(255) NOT NULL,
-            metadata CLOB
-          )';
-        EXCEPTION
-          WHEN OTHERS THEN
-            IF SQLCODE != -955 THEN
-              RAISE;
-            END IF;
-        END;
-      `);
+				BEGIN
+					EXECUTE IMMEDIATE 'CREATE TABLE providers (
+						id VARCHAR2(255) PRIMARY KEY,
+						name VARCHAR2(255) NOT NULL,
+						metadata CLOB
+					)';
+				EXCEPTION
+					WHEN OTHERS THEN
+						IF SQLCODE != -955 THEN
+							RAISE;
+						END IF;
+					END;
+			`);
 
 			await connection.commit();
 		} finally {
@@ -217,6 +221,11 @@ export class OracleAdapter implements StorageAdapter {
 
 	// Appointment operations
 
+	/** Save a new appointment.
+	 * 
+	 * @param appointment Appointment to save
+	 * @returns Saved appointment
+	 */
 	async saveAppointment(appointment: Appointment): Promise<Appointment> {
 		if (!this.pool) throw new Error('Pool not initialized');
 
@@ -225,7 +234,7 @@ export class OracleAdapter implements StorageAdapter {
 		try {
 			await connection.execute(
 				`INSERT INTO appointments (id, provider_id, start_time, end_time, metadata)
-         VALUES (:id, :provider_id, :start_time, :end_time, :metadata)`,
+				VALUES (:id, :provider_id, :start_time, :end_time, :metadata)`,
 				{
 					id: appointment.id,
 					provider_id: appointment.providerId,
@@ -242,6 +251,12 @@ export class OracleAdapter implements StorageAdapter {
 		}
 	}
 
+	/**
+	 * Retrieve an appointment by id.
+	 * 
+	 * @param id Appointment id
+	 * @returns Appointment or null if not found
+	 */
 	async getAppointment(id: string): Promise<Appointment | null> {
 		if (!this.pool) throw new Error('Pool not initialized');
 
@@ -261,6 +276,12 @@ export class OracleAdapter implements StorageAdapter {
 		}
 	}
 
+	/**
+	 * Get all appointments, optionally filtered by provider.
+	 * 
+	 * @param providerId Optional provider id to filter appointments
+	 * @returns List of appointments
+	 */
 	async getAllAppointments(providerId?: string): Promise<Appointment[]> {
 		if (!this.pool) throw new Error('Pool not initialized');
 

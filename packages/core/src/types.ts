@@ -4,49 +4,94 @@
  * Implementations support different databases (PostgreSQL, MySQL, MongoDB, etc.)
  */
 export interface StorageAdapter {
-	/** Initialize the storage adapter and verify connection */
+	/** Initialize the storage adapter and verify connection. */
 	connect(): Promise<void>;
 
-	/** Close the storage connection and cleanup resources */
+	/** Close the storage connection and cleanup resources. */
 	disconnect(): Promise<void>;
 
 	// Appointment operations
-	/** Save a new appointment */
+	/** Save a new appointment.
+	 * 
+	 * @param appointment Appointment to save
+	 * @returns Saved appointment
+	 */
 	saveAppointment(appointment: Appointment): Promise<Appointment>;
 
-	/** Retrieve an appointment by ID */
+	/** Retrieve an appointment by id.
+	 * 
+	 * @param id Appointment id
+	 * @returns Appointment or null if not found
+	 */
 	getAppointment(id: string): Promise<Appointment | null>;
 
-	/** Get all appointments, optionally filtered by provider */
+	/** Get all appointments, optionally filtered by provider.
+	 * 
+	 * @param providerId Optional provider id to filter appointments
+	 * @returns List of appointments
+	 */
 	getAllAppointments(providerId?: string): Promise<Appointment[]>;
 
-	/** Update an existing appointment */
+	/** Update an existing appointment.
+	 * 
+	 * @param id Appointment id
+	 * @param updates Partial appointment data to update
+	 * @returns Updated appointment
+	 */
 	updateAppointment(id: string, updates: Partial<Appointment>): Promise<Appointment>;
 
-	/** Delete an appointment */
+	/** Delete an appointment.
+	 * 
+	 * @param id Appointment id
+	 */
 	deleteAppointment(id: string): Promise<void>;
 
 	// BlockedTime operations
-	/** Save a new blocked time period */
+	/** Save a new blocked time period.
+	 * 
+	 * @param blockedTime Blocked time to save
+	 * @returns Saved blocked time
+	 */
 	saveBlockedTime(blockedTime: BlockedTime): Promise<BlockedTime>;
 
-	/** Get all blocked times, optionally filtered by provider */
+	/** Get all blocked times, optionally filtered by provider.
+	 * 
+	 * @param providerId Optional provider id to filter blocked times
+	 * @returns List of blocked times
+	 */
 	getAllBlockedTimes(providerId?: string): Promise<BlockedTime[]>;
 
-	/** Delete a blocked time period */
+	/** Delete a blocked time period.
+	 * 
+	 * @param id Blocked time id
+	 */
 	deleteBlockedTime(id: string): Promise<void>;
 
 	// Provider operations
-	/** Save a new provider */
+	/** Save a new provider.
+	 * 
+	 * @param provider Provider to save
+	 * @returns Saved provider
+	 */
 	saveProvider(provider: Provider): Promise<Provider>;
 
-	/** Retrieve a provider by ID */
+	/** Retrieve a provider by id.
+	 * 
+	 * @param id Provider id
+	 * @returns Provider or null if not found
+	 */
 	getProvider(id: string): Promise<Provider | null>;
 
-	/** Get all providers */
+	/** Get all providers.
+	 * 
+	 * @returns List of providers
+	 */
 	getAllProviders(): Promise<Provider[]>;
 
-	/** Delete a provider */
+	/** Delete a provider.
+	 * 
+	 * @param id Provider id
+	 */
 	deleteProvider(id: string): Promise<void>;
 
 	/** Clear all data (for testing) */

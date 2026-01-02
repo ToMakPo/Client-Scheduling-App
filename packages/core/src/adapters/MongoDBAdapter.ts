@@ -1,26 +1,39 @@
 import { MongoClient, Db, Collection } from 'mongodb';
 import type { StorageAdapter, Appointment, BlockedTime, Provider } from '../types';
 
-/** Configuration options for MongoDB connection */
+/** Configuration options for MongoDB connection. */
 export interface MongoDBConfig {
 	/** MongoDB connection URI (e.g., "mongodb://localhost:27017") */
 	uri: string;
 
-	/** Database name */
+	/** Database name
+	 * 
+	 * The database will be created if it does not exist.
+	 */
 	database: string;
 
-	/** Optional: Maximum pool size (default: 10) */
+	/** Optional: Maximum pool size (default: 10) 
+	 * 
+	 * Controls the maximum number of connections in the connection pool.
+	 */
 	maxPoolSize?: number;
 
-	/** Optional: Minimum pool size (default: 0) */
+	/** Optional: Minimum pool size (default: 0) 
+	 * 
+	 * Controls the minimum number of connections in the connection pool.
+	 */
 	minPoolSize?: number;
 
-	/** Optional: Connection timeout in milliseconds (default: 10000) */
+	/** Optional: Connection timeout in milliseconds (default: 10000) 
+	 * 
+	 * Specifies how long to wait when connecting before timing out.
+	 */
 	connectTimeoutMS?: number;
 }
 
-/** MongoDB storage adapter implementation
- * Provides persistent storage using MongoDB with connection pooling
+/** MongoDB storage adapter implementation.
+ * 
+ * Provides persistent storage using MongoDB with connection pooling.
  */
 export class MongoDBAdapter implements StorageAdapter {
 	private config: MongoDBConfig;
@@ -36,7 +49,10 @@ export class MongoDBAdapter implements StorageAdapter {
 		};
 	}
 
-	/** Connect to MongoDB and create indexes */
+	/** Connect to MongoDB and create indexes.
+	 * 
+	 * The database and collections will be created if they do not exist.
+	 */
 	async connect(): Promise<void> {
 		this.client = new MongoClient(this.config.uri, {
 			maxPoolSize: this.config.maxPoolSize,
@@ -51,7 +67,10 @@ export class MongoDBAdapter implements StorageAdapter {
 		await this.createIndexes();
 	}
 
-	/** Create indexes on collections for better query performance */
+	/** Create indexes on collections for better query performance.
+	 * 
+	 * Indexes are created on appointments, blocked times, and providers collections.
+	 */
 	private async createIndexes(): Promise<void> {
 		if (!this.db) return;
 
@@ -73,7 +92,7 @@ export class MongoDBAdapter implements StorageAdapter {
 		await providers.createIndex({ id: 1 }, { unique: true });
 	}
 
-	/** Disconnect from MongoDB */
+	/** Disconnect from MongoDB. */
 	async disconnect(): Promise<void> {
 		if (this.client) {
 			await this.client.close();
@@ -82,16 +101,19 @@ export class MongoDBAdapter implements StorageAdapter {
 		}
 	}
 
+	/** Get the appointments collection. */
 	private getAppointmentsCollection(): Collection {
 		if (!this.db) throw new Error('Database not connected');
 		return this.db.collection('appointments');
 	}
 
+	/** Get the blocked times collection. */
 	private getBlockedTimesCollection(): Collection {
 		if (!this.db) throw new Error('Database not connected');
 		return this.db.collection('blocked_times');
 	}
 
+	/** Get the providers collection. */
 	private getProvidersCollection(): Collection {
 		if (!this.db) throw new Error('Database not connected');
 		return this.db.collection('providers');
@@ -130,6 +152,11 @@ export class MongoDBAdapter implements StorageAdapter {
 
 	// Appointment operations
 
+	/** Save an appointment.
+	 * 
+	 * @param appointment Appointment to save
+	 * @returns Saved appointment
+	 */
 	async saveAppointment(appointment: Appointment): Promise<Appointment> {
 		const collection = this.getAppointmentsCollection();
 
@@ -144,6 +171,11 @@ export class MongoDBAdapter implements StorageAdapter {
 		return appointment;
 	}
 
+	/** Get an appointment by id. 
+	 * 
+	 * @param id Appointment id
+	 * @returns Appointment or null if not found.
+	 */
 	async getAppointment(id: string): Promise<Appointment | null> {
 		const collection = this.getAppointmentsCollection();
 		const doc = await collection.findOne({ id });
@@ -152,6 +184,11 @@ export class MongoDBAdapter implements StorageAdapter {
 		return this.docToAppointment(doc);
 	}
 
+	/** Get all appointments, optionally filtered by providerId.
+	 * 
+	 * @param providerId Provider id to filter appointments
+	 * @returns Array of appointments
+	 */
 	async getAllAppointments(providerId?: string): Promise<Appointment[]> {
 		const collection = this.getAppointmentsCollection();
 		const query = providerId ? { provider_id: providerId } : {};
@@ -160,6 +197,12 @@ export class MongoDBAdapter implements StorageAdapter {
 		return docs.map((doc: Record<string, any>) => this.docToAppointment(doc));
 	}
 
+	/** Update an existing appointment.
+	 * 
+	 * @param id Appointment id
+	 * @param updates Partial appointment fields to update
+	 * @returns Updated appointment
+	 */
 	async updateAppointment(id: string, updates: Partial<Appointment>): Promise<Appointment> {
 		const collection = this.getAppointmentsCollection();
 
@@ -181,6 +224,10 @@ export class MongoDBAdapter implements StorageAdapter {
 		return this.docToAppointment(updated);
 	}
 
+	/** Delete an appointment by id.
+	 * 
+	 * @param id Appointment id
+	 */
 	async deleteAppointment(id: string): Promise<void> {
 		const collection = this.getAppointmentsCollection();
 		await collection.deleteOne({ id });
@@ -188,6 +235,11 @@ export class MongoDBAdapter implements StorageAdapter {
 
 	// Blocked time operations
 
+	/** Save a blocked time.
+	 * 
+	 * @param blockedTime Blocked time to save
+	 * @returns Saved blocked time
+	 */
 	async saveBlockedTime(blockedTime: BlockedTime): Promise<BlockedTime> {
 		const collection = this.getBlockedTimesCollection();
 
@@ -202,6 +254,11 @@ export class MongoDBAdapter implements StorageAdapter {
 		return blockedTime;
 	}
 
+	/** Get a blocked time by id.
+	 * 
+	 * @param id Blocked time id
+	 * @returns Blocked time or null if not found
+	 */
 	async getBlockedTime(id: string): Promise<BlockedTime | null> {
 		const collection = this.getBlockedTimesCollection();
 		const doc = await collection.findOne({ id });
@@ -210,6 +267,11 @@ export class MongoDBAdapter implements StorageAdapter {
 		return this.docToBlockedTime(doc);
 	}
 
+	/** Get all blocked times, optionally filtered by providerId.
+	 * 
+	 * @param providerId Provider id to filter blocked times
+	 * @returns Array of blocked times
+	 */
 	async getAllBlockedTimes(providerId?: string): Promise<BlockedTime[]> {
 		const collection = this.getBlockedTimesCollection();
 		const query = providerId ? { provider_id: providerId } : {};
@@ -218,6 +280,10 @@ export class MongoDBAdapter implements StorageAdapter {
 		return docs.map((doc: Record<string, any>) => this.docToBlockedTime(doc));
 	}
 
+	/** Delete a blocked time by id.
+	 * 
+	 * @param id Blocked time id
+	 */
 	async deleteBlockedTime(id: string): Promise<void> {
 		const collection = this.getBlockedTimesCollection();
 		await collection.deleteOne({ id });
@@ -225,6 +291,11 @@ export class MongoDBAdapter implements StorageAdapter {
 
 	// Provider operations
 
+	/** Save a provider.
+	 * 
+	 * @param provider Provider to save
+	 * @returns Saved provider
+	 */
 	async saveProvider(provider: Provider): Promise<Provider> {
 		const collection = this.getProvidersCollection();
 
@@ -237,6 +308,11 @@ export class MongoDBAdapter implements StorageAdapter {
 		return provider;
 	}
 
+	/** Get a provider by id.
+	 * 
+	 * @param id Provider id
+	 * @returns Provider or null if not found
+	 */
 	async getProvider(id: string): Promise<Provider | null> {
 		const collection = this.getProvidersCollection();
 		const doc = await collection.findOne({ id });
@@ -245,12 +321,20 @@ export class MongoDBAdapter implements StorageAdapter {
 		return this.docToProvider(doc);
 	}
 
+	/** Get all providers.
+	 * 
+	 * @returns Array of providers
+	 */
 	async getAllProviders(): Promise<Provider[]> {
 		const collection = this.getProvidersCollection();
 		const docs = await collection.find({}).toArray();
 		return docs.map((doc: Record<string, any>) => this.docToProvider(doc));
 	}
 
+	/** Delete a provider by id.
+	 * 
+	 * @param id Provider id
+	 */
 	async deleteProvider(id: string): Promise<void> {
 		const collection = this.getProvidersCollection();
 		await collection.deleteOne({ id });
