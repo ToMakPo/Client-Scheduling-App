@@ -1,5 +1,5 @@
 import { useMemo, useCallback } from 'react';
-import { Scheduler, type SchedulerConfig } from '@makai/scheduler-core';
+import { Scheduler, type SchedulerConfig } from '@thunguard/scheduler-core';
 
 /**
  * React hook for using the Scheduler in a component

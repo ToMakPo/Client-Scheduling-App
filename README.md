@@ -6,7 +6,7 @@ Monorepo for headless scheduling library and React components for building appoi
 
 This monorepo contains two npm packages:
 
-### [@makai/scheduler-core](./packages/core)
+### [@thunguard/scheduler-core](./packages/core)
 Framework-agnostic headless scheduling library that provides:
 - ✅ Stateful appointment management
 - ✅ Multi-provider scheduling
@@ -18,8 +18,8 @@ Framework-agnostic headless scheduling library that provides:
 
 **Use this if:** You want maximum flexibility and plan to build your own UI.
 
-### [@makai/scheduler-react](./packages/react)
-React hooks and components built on top of `@makai/scheduler-core`:
+### [@thunguard/scheduler-react](./packages/react)
+React hooks and components built on top of `@thunguard/scheduler-core`:
 - ✅ `useScheduler` hook for easy integration
 - ✅ React 18+ compatible
 - ✅ Fully typed with TypeScript
@@ -31,11 +31,11 @@ React hooks and components built on top of `@makai/scheduler-core`:
 ### Using the Headless Core (Any Framework)
 
 ```bash
-npm install @makai/scheduler-core
+npm install @thunguard/scheduler-core
 ```
 
 ```typescript
-import { Scheduler } from '@makai/scheduler-core';
+import { Scheduler } from '@thunguard/scheduler-core';
 
 const scheduler = new Scheduler({
   providers: [
@@ -63,11 +63,11 @@ const apt = scheduler.createAppointment({
 ### Using with React
 
 ```bash
-npm install @makai/scheduler-react @makai/scheduler-core
+npm install @thunguard/scheduler-react @thunguard/scheduler-core
 ```
 
 ```tsx
-import { useScheduler } from '@makai/scheduler-react';
+import { useScheduler } from '@thunguard/scheduler-react';
 
 function BookingApp() {
   const { createAppointment, findAvailableSlots } = useScheduler({
@@ -83,14 +83,14 @@ function BookingApp() {
 ```
 client-scheduling-app/
 ├── packages/
-│   ├── core/              # @makai/scheduler-core (headless library)
+│   ├── core/              # @thunguard/scheduler-core (headless library)
 │   │   ├── src/
 │   │   │   ├── Scheduler.ts
 │   │   │   ├── types.ts
 │   │   │   └── index.ts
 │   │   └── package.json
 │   │
-│   └── react/             # @makai/scheduler-react (React bindings)
+│   └── react/             # @thunguard/scheduler-react (React bindings)
 │       ├── src/
 │       │   ├── hooks/
 │       │   │   └── useScheduler.ts

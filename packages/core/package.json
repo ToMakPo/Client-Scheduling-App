@@ -1,5 +1,5 @@
 {
-	"name": "@makai/scheduler-core",
+	"name": "@thunguard/scheduler-core",
 	"version": "0.1.0",
 	"description": "Framework-agnostic headless scheduling library for managing appointments and availability",
 	"author": "Makai Post <post.makai@example.com>",
