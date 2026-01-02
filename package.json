@@ -1,0 +1,19 @@
+{
+  "name": "client-scheduling-app",
+  "description": "A scheduling application for clients to book appointments easily.",
+  "version": "1.0.0",
+	"author": "Makai Post <post.makai@example.com>",
+	"license": "UNLICENSED",
+	"private": true,
+  "keywords": [
+    "scheduling",
+    "client"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ToMakPo/Client-Scheduling-App.git"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  }
+}
