@@ -1,0 +1,44 @@
+{
+	"name": "@makai/scheduler-core",
+	"version": "0.1.0",
+	"description": "Framework-agnostic headless scheduling library for managing appointments and availability",
+	"author": "Makai Post <post.makai@example.com>",
+	"license": "MIT",
+	"keywords": [
+		"scheduling",
+		"appointment",
+		"calendar",
+		"booking",
+		"headless",
+		"availability"
+	],
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/ToMakPo/Client-Scheduling-App.git",
+		"directory": "packages/core"
+	},
+	"main": "./dist/index.cjs",
+	"module": "./dist/index.js",
+	"types": "./dist/index.d.ts",
+	"exports": {
+		".": {
+			"import": "./dist/index.js",
+			"require": "./dist/index.cjs",
+			"types": "./dist/index.d.ts"
+		}
+	},
+	"files": [
+		"dist",
+		"README.md"
+	],
+	"scripts": {
+		"build": "tsup src/index.ts --format cjs,esm --dts --clean",
+		"dev": "tsup src/index.ts --format cjs,esm --dts --watch",
+		"test": "echo \"Tests to be implemented\"",
+		"clean": "rm -rf dist"
+	},
+	"devDependencies": {
+		"tsup": "^8.0.1",
+		"typescript": "^5.3.3"
+	}
+}
