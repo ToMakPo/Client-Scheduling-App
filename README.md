@@ -20,8 +20,6 @@ To be documented as the project develops.
 
 This project is proprietary and not licensed for public use. If you wish to use, modify, or distribute any part of this project, you must contact the author to obtain explicit written permission.
 
-**Contact for Licensing**: post.makai@gmail.com
-
 All rights reserved.
 
 ## Author
