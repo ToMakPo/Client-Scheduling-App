@@ -1,38 +1,25 @@
 import { MongoClient, Db, Collection } from 'mongodb';
 import type { StorageAdapter, Appointment, BlockedTime, Provider } from '../types';
 
-/**
- * Configuration options for MongoDB connection
- */
+/** Configuration options for MongoDB connection */
 export interface MongoDBConfig {
-	/**
-	 * MongoDB connection URI (e.g., "mongodb://localhost:27017")
-	 */
+	/** MongoDB connection URI (e.g., "mongodb://localhost:27017") */
 	uri: string;
 
-	/**
-	 * Database name
-	 */
+	/** Database name */
 	database: string;
 
-	/**
-	 * Optional: Maximum pool size (default: 10)
-	 */
+	/** Optional: Maximum pool size (default: 10) */
 	maxPoolSize?: number;
 
-	/**
-	 * Optional: Minimum pool size (default: 0)
-	 */
+	/** Optional: Minimum pool size (default: 0) */
 	minPoolSize?: number;
 
-	/**
-	 * Optional: Connection timeout in milliseconds (default: 10000)
-	 */
+	/** Optional: Connection timeout in milliseconds (default: 10000) */
 	connectTimeoutMS?: number;
 }
 
-/**
- * MongoDB storage adapter implementation
+/** MongoDB storage adapter implementation
  * Provides persistent storage using MongoDB with connection pooling
  */
 export class MongoDBAdapter implements StorageAdapter {
@@ -49,9 +36,7 @@ export class MongoDBAdapter implements StorageAdapter {
 		};
 	}
 
-	/**
-	 * Connect to MongoDB and create indexes
-	 */
+	/** Connect to MongoDB and create indexes */
 	async connect(): Promise<void> {
 		this.client = new MongoClient(this.config.uri, {
 			maxPoolSize: this.config.maxPoolSize,
@@ -66,9 +51,7 @@ export class MongoDBAdapter implements StorageAdapter {
 		await this.createIndexes();
 	}
 
-	/**
-	 * Create indexes on collections for better query performance
-	 */
+	/** Create indexes on collections for better query performance */
 	private async createIndexes(): Promise<void> {
 		if (!this.db) return;
 
@@ -90,9 +73,7 @@ export class MongoDBAdapter implements StorageAdapter {
 		await providers.createIndex({ id: 1 }, { unique: true });
 	}
 
-	/**
-	 * Disconnect from MongoDB
-	 */
+	/** Disconnect from MongoDB */
 	async disconnect(): Promise<void> {
 		if (this.client) {
 			await this.client.close();
@@ -116,9 +97,7 @@ export class MongoDBAdapter implements StorageAdapter {
 		return this.db.collection('providers');
 	}
 
-	/**
-	 * Convert MongoDB document to Appointment
-	 */
+	/** Convert MongoDB document to Appointment */
 	private docToAppointment(doc: Record<string, any>): Appointment {
 		return {
 			id: doc.id,
@@ -129,9 +108,7 @@ export class MongoDBAdapter implements StorageAdapter {
 		};
 	}
 
-	/**
-	 * Convert MongoDB document to BlockedTime
-	 */
+	/** Convert MongoDB document to BlockedTime */
 	private docToBlockedTime(doc: Record<string, any>): BlockedTime {
 		return {
 			id: doc.id,
@@ -142,9 +119,7 @@ export class MongoDBAdapter implements StorageAdapter {
 		};
 	}
 
-	/**
-	 * Convert MongoDB document to Provider
-	 */
+	/** Convert MongoDB document to Provider */
 	private docToProvider(doc: Record<string, any>): Provider {
 		return {
 			id: doc.id,
@@ -281,9 +256,7 @@ export class MongoDBAdapter implements StorageAdapter {
 		await collection.deleteOne({ id });
 	}
 
-	/**
-	 * Clear all data (useful for testing)
-	 */
+	/** Clear all data (useful for testing) */
 	async clear(): Promise<void> {
 		if (!this.db) return;
 

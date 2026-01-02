@@ -1,68 +1,43 @@
 import type { ConnectionPool, config as SQLConfig } from 'mssql';
 import type { StorageAdapter, Appointment, BlockedTime, Provider } from '../types';
 
-/**
- * Configuration options for SQL Server connection pool
- */
+/** Configuration options for SQL Server connection pool */
 export interface SQLServerConfig {
-	/**
-	 * SQL Server host (default: localhost)
-	 */
+	/** SQL Server host (default: localhost) */
 	server?: string;
 
-	/**
-	 * SQL Server port (default: 1433)
-	 */
+	/** SQL Server port (default: 1433) */
 	port?: number;
 
-	/**
-	 * Database name
-	 */
+	/** Database name */
 	database: string;
 
-	/**
-	 * Database username
-	 */
+	/** Database username */
 	user: string;
 
-	/**
-	 * Database password
-	 */
+	/** Database password */
 	password: string;
 
-	/**
-	 * Maximum number of connections in pool (default: 10)
-	 */
+	/** Maximum number of connections in pool (default: 10) */
 	max?: number;
 
-	/**
-	 * Minimum number of connections in pool (default: 0)
-	 */
+	/** Minimum number of connections in pool (default: 0) */
 	min?: number;
 
-	/**
-	 * Connection timeout in milliseconds (default: 15000)
-	 */
+	/** Connection timeout in milliseconds (default: 15000) */
 	connectionTimeout?: number;
 
-	/**
-	 * Request timeout in milliseconds (default: 15000)
-	 */
+	/** Request timeout in milliseconds (default: 15000) */
 	requestTimeout?: number;
 
-	/**
-	 * Enable encryption (default: true)
-	 */
+	/** Enable encryption (default: true) */
 	encrypt?: boolean;
 
-	/**
-	 * Trust server certificate (default: false)
-	 */
+	/** Trust server certificate (default: false) */
 	trustServerCertificate?: boolean;
 }
 
-/**
- * SQL Server storage adapter implementation
+/** SQL Server storage adapter implementation
  * Provides persistent storage using SQL Server with connection pooling
  */
 export class SQLServerAdapter implements StorageAdapter {
@@ -83,9 +58,7 @@ export class SQLServerAdapter implements StorageAdapter {
 		};
 	}
 
-	/**
-	 * Connect to SQL Server and create tables if they don't exist
-	 */
+	/** Connect to SQL Server and create tables if they don't exist */
 	async connect(): Promise<void> {
 		const mssql = await import('mssql');
 
@@ -113,9 +86,7 @@ export class SQLServerAdapter implements StorageAdapter {
 		await this.createTables();
 	}
 
-	/**
-	 * Create database tables with proper indexes
-	 */
+	/** Create database tables with proper indexes */
 	private async createTables(): Promise<void> {
 		if (!this.pool) throw new Error('Pool not initialized');
 
@@ -174,9 +145,7 @@ export class SQLServerAdapter implements StorageAdapter {
     `);
 	}
 
-	/**
-	 * Disconnect from SQL Server and close pool
-	 */
+	/** Disconnect from SQL Server and close pool */
 	async disconnect(): Promise<void> {
 		if (this.pool) {
 			await this.pool.close();
@@ -184,9 +153,7 @@ export class SQLServerAdapter implements StorageAdapter {
 		}
 	}
 
-	/**
-	 * Convert SQL Server row to Appointment
-	 */
+	/** Convert SQL Server row to Appointment */
 	private rowToAppointment(row: Record<string, any>): Appointment {
 		return {
 			id: row.id,
@@ -197,9 +164,7 @@ export class SQLServerAdapter implements StorageAdapter {
 		};
 	}
 
-	/**
-	 * Convert SQL Server row to BlockedTime
-	 */
+	/** Convert SQL Server row to BlockedTime */
 	private rowToBlockedTime(row: Record<string, any>): BlockedTime {
 		return {
 			id: row.id,
@@ -210,9 +175,7 @@ export class SQLServerAdapter implements StorageAdapter {
 		};
 	}
 
-	/**
-	 * Convert SQL Server row to Provider
-	 */
+	/** Convert SQL Server row to Provider */
 	private rowToProvider(row: Record<string, any>): Provider {
 		return {
 			id: row.id,
@@ -417,9 +380,7 @@ export class SQLServerAdapter implements StorageAdapter {
 			.query('DELETE FROM providers WHERE id = @id');
 	}
 
-	/**
-	 * Clear all data (useful for testing)
-	 */
+	/** Clear all data (useful for testing) */
 	async clear(): Promise<void> {
 		if (!this.pool) throw new Error('Pool not initialized');
 

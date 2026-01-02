@@ -1,49 +1,33 @@
 import type { Pool, PoolAttributes, Connection } from 'oracledb';
 import type { StorageAdapter, Appointment, BlockedTime, Provider } from '../types';
 
-/**
- * Configuration options for Oracle connection pool
- */
+/** Configuration options for Oracle connection pool */
 export interface OracleConfig {
-	/**
-	 * Oracle connection string or descriptor
+	/** Oracle connection string or descriptor
 	 * Format: "hostname:port/servicename" or TNS descriptor
 	 */
 	connectString: string;
 
-	/**
-	 * Database username
-	 */
+	/** Database username */
 	user: string;
 
-	/**
-	 * Database password
-	 */
+	/** Database password */
 	password: string;
 
-	/**
-	 * Maximum number of connections in pool (default: 10)
-	 */
+	/** Maximum number of connections in pool (default: 10) */
 	poolMax?: number;
 
-	/**
-	 * Minimum number of connections in pool (default: 0)
-	 */
+	/** Minimum number of connections in pool (default: 0) */
 	poolMin?: number;
 
-	/**
-	 * Connection pool increment (default: 1)
-	 */
+	/** Connection pool increment (default: 1) */
 	poolIncrement?: number;
 
-	/**
-	 * Connection timeout in seconds (default: 60)
-	 */
+	/** Connection timeout in seconds (default: 60) */
 	poolTimeout?: number;
 }
 
-/**
- * Oracle storage adapter implementation
+/** Oracle storage adapter implementation
  * Provides persistent storage using Oracle Database with connection pooling
  */
 export class OracleAdapter implements StorageAdapter {
@@ -61,9 +45,7 @@ export class OracleAdapter implements StorageAdapter {
 		};
 	}
 
-	/**
-	 * Connect to Oracle and create tables if they don't exist
-	 */
+	/** Connect to Oracle and create tables if they don't exist */
 	async connect(): Promise<void> {
 		this.oracledb = await import('oracledb');
 
@@ -83,9 +65,7 @@ export class OracleAdapter implements StorageAdapter {
 		await this.createTables();
 	}
 
-	/**
-	 * Create database tables with proper indexes
-	 */
+	/** Create database tables with proper indexes */
 	private async createTables(): Promise<void> {
 		if (!this.pool) throw new Error('Pool not initialized');
 
@@ -196,9 +176,7 @@ export class OracleAdapter implements StorageAdapter {
 		}
 	}
 
-	/**
-	 * Disconnect from Oracle and close pool
-	 */
+	/** Disconnect from Oracle and close pool */
 	async disconnect(): Promise<void> {
 		if (this.pool) {
 			await this.pool.close(0);
@@ -206,9 +184,7 @@ export class OracleAdapter implements StorageAdapter {
 		}
 	}
 
-	/**
-	 * Convert Oracle row to Appointment
-	 */
+	/** Convert Oracle row to Appointment */
 	private rowToAppointment(row: any[]): Appointment {
 		return {
 			id: row[0],
@@ -219,9 +195,7 @@ export class OracleAdapter implements StorageAdapter {
 		};
 	}
 
-	/**
-	 * Convert Oracle row to BlockedTime
-	 */
+	/** Convert Oracle row to BlockedTime */
 	private rowToBlockedTime(row: any[]): BlockedTime {
 		return {
 			id: row[0],
@@ -232,9 +206,7 @@ export class OracleAdapter implements StorageAdapter {
 		};
 	}
 
-	/**
-	 * Convert Oracle row to Provider
-	 */
+	/** Convert Oracle row to Provider */
 	private rowToProvider(row: any[]): Provider {
 		return {
 			id: row[0],
@@ -543,9 +515,7 @@ export class OracleAdapter implements StorageAdapter {
 		}
 	}
 
-	/**
-	 * Clear all data (useful for testing)
-	 */
+	/** Clear all data (useful for testing) */
 	async clear(): Promise<void> {
 		if (!this.pool) throw new Error('Pool not initialized');
 

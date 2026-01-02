@@ -1,39 +1,27 @@
 import type Database from 'better-sqlite3';
 import type { StorageAdapter, Appointment, BlockedTime, Provider } from '../types';
 
-/**
- * Configuration options for SQLite database
- */
+/** Configuration options for SQLite database */
 export interface SQLiteConfig {
-	/**
-	 * Path to the SQLite database file
+	/** Path to the SQLite database file
 	 * Use ':memory:' for in-memory database
 	 */
 	filename: string;
 
-	/**
-	 * Open database in read-only mode (default: false)
-	 */
+	/** Open database in read-only mode (default: false) */
 	readonly?: boolean;
 
-	/**
-	 * Fail if database file does not exist (default: false)
-	 */
+	/** Fail if database file does not exist (default: false) */
 	fileMustExist?: boolean;
 
-	/**
-	 * Connection timeout in milliseconds (default: 5000)
-	 */
+	/** Connection timeout in milliseconds (default: 5000) */
 	timeout?: number;
 
-	/**
-	 * Enable verbose logging (default: false)
-	 */
+	/** Enable verbose logging (default: false) */
 	verbose?: boolean;
 }
 
-/**
- * SQLite storage adapter implementation
+/** SQLite storage adapter implementation
  * Provides persistent storage using SQLite with file-based database
  * Perfect for local development, testing, and embedded applications
  */
@@ -51,9 +39,7 @@ export class SQLiteAdapter implements StorageAdapter {
 		};
 	}
 
-	/**
-	 * Connect to SQLite database and create tables if they don't exist
-	 */
+	/** Connect to SQLite database and create tables if they don't exist */
 	async connect(): Promise<void> {
 		const Database = (await import('better-sqlite3')).default;
 
@@ -68,9 +54,7 @@ export class SQLiteAdapter implements StorageAdapter {
 		this.createTables();
 	}
 
-	/**
-	 * Create database tables with proper indexes
-	 */
+	/** Create database tables with proper indexes */
 	private createTables(): void {
 		if (!this.db) throw new Error('Database not initialized');
 
@@ -122,9 +106,7 @@ export class SQLiteAdapter implements StorageAdapter {
     `);
 	}
 
-	/**
-	 * Disconnect from SQLite database
-	 */
+	/** Disconnect from SQLite database */
 	async disconnect(): Promise<void> {
 		if (this.db) {
 			this.db.close();
@@ -132,9 +114,7 @@ export class SQLiteAdapter implements StorageAdapter {
 		}
 	}
 
-	/**
-	 * Convert SQLite row to Appointment
-	 */
+	/** Convert SQLite row to Appointment */
 	private rowToAppointment(row: Record<string, any>): Appointment {
 		return {
 			id: row.id,
@@ -145,9 +125,7 @@ export class SQLiteAdapter implements StorageAdapter {
 		};
 	}
 
-	/**
-	 * Convert SQLite row to BlockedTime
-	 */
+	/** Convert SQLite row to BlockedTime */
 	private rowToBlockedTime(row: Record<string, any>): BlockedTime {
 		return {
 			id: row.id,
@@ -158,9 +136,7 @@ export class SQLiteAdapter implements StorageAdapter {
 		};
 	}
 
-	/**
-	 * Convert SQLite row to Provider
-	 */
+	/** Convert SQLite row to Provider */
 	private rowToProvider(row: Record<string, any>): Provider {
 		return {
 			id: row.id,
@@ -363,9 +339,7 @@ export class SQLiteAdapter implements StorageAdapter {
 		stmt.run(id);
 	}
 
-	/**
-	 * Clear all data (useful for testing)
-	 */
+	/** Clear all data (useful for testing) */
 	async clear(): Promise<void> {
 		if (!this.db) throw new Error('Database not initialized');
 

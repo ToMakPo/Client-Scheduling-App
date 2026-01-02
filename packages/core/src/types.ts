@@ -1,94 +1,59 @@
-/**
- * Core types for the scheduling library
- */
+/** Core types for the scheduling library */
 
-/**
- * Abstract storage adapter interface for persisting scheduler data
+/** Abstract storage adapter interface for persisting scheduler data
  * Implementations support different databases (PostgreSQL, MySQL, MongoDB, etc.)
  */
 export interface StorageAdapter {
-	/**
-	 * Initialize the storage adapter and verify connection
-	 */
+	/** Initialize the storage adapter and verify connection */
 	connect(): Promise<void>;
 
-	/**
-	 * Close the storage connection and cleanup resources
-	 */
+	/** Close the storage connection and cleanup resources */
 	disconnect(): Promise<void>;
 
 	// Appointment operations
-	/**
-	 * Save a new appointment
-	 */
+	/** Save a new appointment */
 	saveAppointment(appointment: Appointment): Promise<Appointment>;
 
-	/**
-	 * Retrieve an appointment by ID
-	 */
+	/** Retrieve an appointment by ID */
 	getAppointment(id: string): Promise<Appointment | null>;
 
-	/**
-	 * Get all appointments, optionally filtered by provider
-	 */
+	/** Get all appointments, optionally filtered by provider */
 	getAllAppointments(providerId?: string): Promise<Appointment[]>;
 
-	/**
-	 * Update an existing appointment
-	 */
+	/** Update an existing appointment */
 	updateAppointment(id: string, updates: Partial<Appointment>): Promise<Appointment>;
 
-	/**
-	 * Delete an appointment
-	 */
+	/** Delete an appointment */
 	deleteAppointment(id: string): Promise<void>;
 
 	// BlockedTime operations
-	/**
-	 * Save a new blocked time period
-	 */
+	/** Save a new blocked time period */
 	saveBlockedTime(blockedTime: BlockedTime): Promise<BlockedTime>;
 
-	/**
-	 * Get all blocked times, optionally filtered by provider
-	 */
+	/** Get all blocked times, optionally filtered by provider */
 	getAllBlockedTimes(providerId?: string): Promise<BlockedTime[]>;
 
-	/**
-	 * Delete a blocked time period
-	 */
+	/** Delete a blocked time period */
 	deleteBlockedTime(id: string): Promise<void>;
 
 	// Provider operations
-	/**
-	 * Save a new provider
-	 */
+	/** Save a new provider */
 	saveProvider(provider: Provider): Promise<Provider>;
 
-	/**
-	 * Retrieve a provider by ID
-	 */
+	/** Retrieve a provider by ID */
 	getProvider(id: string): Promise<Provider | null>;
 
-	/**
-	 * Get all providers
-	 */
+	/** Get all providers */
 	getAllProviders(): Promise<Provider[]>;
 
-	/**
-	 * Delete a provider
-	 */
+	/** Delete a provider */
 	deleteProvider(id: string): Promise<void>;
 
-	/**
-	 * Clear all data (for testing)
-	 */
+	/** Clear all data (for testing) */
 	clear?(): Promise<void>;
 }
 
-/**
- * Configuration for appointment duration and buffer time
- */
+/** Configuration for appointment duration and buffer time */
 export interface AppointmentDuration {
 	/** Total duration of the appointment window in minutes */
 	totalMinutes: number;
@@ -96,9 +61,7 @@ export interface AppointmentDuration {
 	bufferMinutes?: number;
 }
 
-/**
- * Represents a scheduled appointment
- */
+/** Represents a scheduled appointment */
 export interface Appointment {
 	/** Unique identifier for the appointment */
 	id: string;
@@ -112,9 +75,7 @@ export interface Appointment {
 	metadata?: Record<string, unknown>;
 }
 
-/**
- * Represents a time period when appointments cannot be scheduled
- */
+/** Represents a time period when appointments cannot be scheduled */
 export interface BlockedTime {
 	/** Unique identifier for the blocked time */
 	id: string;
@@ -128,9 +89,7 @@ export interface BlockedTime {
 	reason?: string;
 }
 
-/**
- * Represents an available time slot for booking
- */
+/** Represents an available time slot for booking */
 export interface TimeSlot {
 	/** ISO 8601 date-time string for slot start */
 	startTime: string;
@@ -140,9 +99,7 @@ export interface TimeSlot {
 	providerIds: string[];
 }
 
-/**
- * Provider/employee information
- */
+/** Provider/employee information */
 export interface Provider {
 	/** Unique identifier for the provider */
 	id: string;
@@ -152,9 +109,7 @@ export interface Provider {
 	metadata?: Record<string, unknown>;
 }
 
-/**
- * Configuration for the Scheduler
- */
+/** Configuration for the Scheduler */
 export interface SchedulerConfig {
 	/** List of appointments already scheduled */
 	appointments?: Appointment[];
@@ -168,9 +123,7 @@ export interface SchedulerConfig {
 	storage?: StorageAdapter;
 }
 
-/**
- * Options for finding available time slots
- */
+/** Options for finding available time slots */
 export interface FindSlotsOptions {
 	/** Appointment duration configuration */
 	duration: AppointmentDuration;
@@ -184,9 +137,7 @@ export interface FindSlotsOptions {
 	providerIds?: string[];
 }
 
-/**
- * Options for creating an appointment
- */
+/** Options for creating an appointment */
 export interface CreateAppointmentOptions {
 	/** ISO 8601 date-time string for appointment start */
 	startTime: string;
@@ -198,9 +149,7 @@ export interface CreateAppointmentOptions {
 	metadata?: Record<string, unknown>;
 }
 
-/**
- * Options for updating an appointment
- */
+/** Options for updating an appointment */
 export interface UpdateAppointmentOptions {
 	/** New start time (ISO 8601) */
 	startTime?: string;

@@ -1,8 +1,7 @@
 import { useMemo, useCallback, useState, useEffect } from 'react';
 import { Scheduler, type SchedulerConfig } from '@thunguard/scheduler-core';
 
-/**
- * React hook for using the Scheduler in a component
+/** React hook for using the Scheduler in a component
  * Handles async initialization and provides memoized scheduler methods
  */
 export function useScheduler(config?: SchedulerConfig) {

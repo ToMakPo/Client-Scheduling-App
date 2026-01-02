@@ -1,53 +1,34 @@
 import type { Pool, PoolOptions } from 'mysql2/promise';
 import type { StorageAdapter, Appointment, BlockedTime, Provider } from '../types';
 
-/**
- * Configuration options for MySQL connection pool
- */
+/** Configuration options for MySQL connection pool */
 export interface MySQLPoolConfig {
-	/**
-	 * MySQL server host (default: localhost)
-	 */
+	/** MySQL server host (default: localhost) */
 	host?: string;
 
-	/**
-	 * MySQL server port (default: 3306)
-	 */
+	/** MySQL server port (default: 3306) */
 	port?: number;
 
-	/**
-	 * Database name
-	 */
+	/** Database name */
 	database: string;
 
-	/**
-	 * Database username
-	 */
+	/** Database username */
 	user: string;
 
-	/**
-	 * Database password
-	 */
+	/** Database password */
 	password: string;
 
-	/**
-	 * Maximum number of connections in pool (default: 10)
-	 */
+	/** Maximum number of connections in pool (default: 10) */
 	connectionLimit?: number;
 
-	/**
-	 * Wait for connections if pool is exhausted (default: true)
-	 */
+	/** Wait for connections if pool is exhausted (default: true) */
 	waitForConnections?: boolean;
 
-	/**
-	 * Queue limit for waiting connections (default: 0 - unlimited)
-	 */
+	/** Queue limit for waiting connections (default: 0 - unlimited) */
 	queueLimit?: number;
 }
 
-/**
- * MySQL storage adapter implementation
+/** MySQL storage adapter implementation
  * Provides persistent storage using MySQL with connection pooling
  */
 export class MySQLAdapter implements StorageAdapter {
@@ -65,9 +46,7 @@ export class MySQLAdapter implements StorageAdapter {
 		};
 	}
 
-	/**
-	 * Connect to MySQL and create tables if they don't exist
-	 */
+	/** Connect to MySQL and create tables if they don't exist */
 	async connect(): Promise<void> {
 		const mysql = await import('mysql2/promise');
 
@@ -88,9 +67,7 @@ export class MySQLAdapter implements StorageAdapter {
 		await this.createTables();
 	}
 
-	/**
-	 * Create database tables with proper indexes
-	 */
+	/** Create database tables with proper indexes */
 	private async createTables(): Promise<void> {
 		if (!this.pool) throw new Error('Pool not initialized');
 
@@ -130,9 +107,7 @@ export class MySQLAdapter implements StorageAdapter {
     `);
 	}
 
-	/**
-	 * Disconnect from MySQL and close pool
-	 */
+	/** Disconnect from MySQL and close pool */
 	async disconnect(): Promise<void> {
 		if (this.pool) {
 			await this.pool.end();
@@ -140,9 +115,7 @@ export class MySQLAdapter implements StorageAdapter {
 		}
 	}
 
-	/**
-	 * Convert MySQL row to Appointment
-	 */
+	/** Convert MySQL row to Appointment */
 	private rowToAppointment(row: Record<string, any>): Appointment {
 		return {
 			id: row.id,
@@ -153,9 +126,7 @@ export class MySQLAdapter implements StorageAdapter {
 		};
 	}
 
-	/**
-	 * Convert MySQL row to BlockedTime
-	 */
+	/** Convert MySQL row to BlockedTime */
 	private rowToBlockedTime(row: Record<string, any>): BlockedTime {
 		return {
 			id: row.id,
@@ -166,9 +137,7 @@ export class MySQLAdapter implements StorageAdapter {
 		};
 	}
 
-	/**
-	 * Convert MySQL row to Provider
-	 */
+	/** Convert MySQL row to Provider */
 	private rowToProvider(row: Record<string, any>): Provider {
 		return {
 			id: row.id,
@@ -363,9 +332,7 @@ export class MySQLAdapter implements StorageAdapter {
 		await this.pool.execute('DELETE FROM providers WHERE id = ?', [id]);
 	}
 
-	/**
-	 * Clear all data (useful for testing)
-	 */
+	/** Clear all data (useful for testing) */
 	async clear(): Promise<void> {
 		if (!this.pool) throw new Error('Pool not initialized');
 

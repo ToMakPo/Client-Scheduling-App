@@ -16,8 +16,7 @@ interface PostgresPoolConfig {
 	connectionTimeoutMillis?: number;
 }
 
-/**
- * PostgreSQL adapter with connection pooling support
+/** PostgreSQL adapter with connection pooling support
  * Works with pg (node-postgres) library
  */
 export class PostgresAdapter implements StorageAdapter {
@@ -35,9 +34,7 @@ export class PostgresAdapter implements StorageAdapter {
 		};
 	}
 
-	/**
-	 * Initialize connection pool and create tables if they don't exist
-	 */
+	/** Initialize connection pool and create tables if they don't exist */
 	async connect(): Promise<void> {
 		try {
 			// Lazy import pg to avoid requiring it as a dependency
@@ -57,9 +54,7 @@ export class PostgresAdapter implements StorageAdapter {
 		}
 	}
 
-	/**
-	 * Close all pool connections
-	 */
+	/** Close all pool connections */
 	async disconnect(): Promise<void> {
 		if (this.pool && this.isConnected) {
 			await this.pool.end();
@@ -67,9 +62,7 @@ export class PostgresAdapter implements StorageAdapter {
 		}
 	}
 
-	/**
-	 * Create necessary tables
-	 */
+	/** Create necessary tables */
 	private async initializeTables(): Promise<void> {
 		const queries = [
 			`

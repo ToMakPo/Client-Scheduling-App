@@ -1,5 +1,4 @@
-/**
- * @makai/scheduler-core
+/** @makai/scheduler-core
  * 
  * Framework-agnostic headless scheduling library
  */
