@@ -1,19 +1,30 @@
 {
-  "name": "client-scheduling-app",
-  "description": "A scheduling application for clients to book appointments easily.",
-  "version": "1.0.0",
+	"name": "client-scheduling-app",
+	"description": "A scheduling application for clients to book appointments easily.",
+	"version": "1.0.0",
 	"author": "Makai Post <post.makai@example.com>",
-	"license": "UNLICENSED",
+	"license": "MIT",
 	"private": true,
-  "keywords": [
-    "scheduling",
-    "client"
-  ],
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/ToMakPo/Client-Scheduling-App.git"
-  },
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  }
+	"workspaces": [
+		"packages/*"
+	],
+	"keywords": [
+		"scheduling",
+		"appointment",
+		"calendar",
+		"booking"
+	],
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/ToMakPo/Client-Scheduling-App.git"
+	},
+	"scripts": {
+		"build": "npm run build --workspaces",
+		"test": "npm run test --workspaces",
+		"dev": "npm run dev --workspaces --if-present",
+		"clean": "npm run clean --workspaces --if-present"
+	},
+	"devDependencies": {
+		"typescript": "^5.3.3"
+	}
 }
