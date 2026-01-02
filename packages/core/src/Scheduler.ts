@@ -7,38 +7,108 @@ import type {
 	TimeSlot,
 	CreateAppointmentOptions,
 	UpdateAppointmentOptions,
+	StorageAdapter,
 } from './types';
 
 /**
- * Stateful scheduler for managing appointments, availability, and providers
+ * In-memory storage adapter fallback when no adapter is provided
  */
-export class Scheduler {
+class MemoryStorageAdapter implements StorageAdapter {
 	private appointments: Map<string, Appointment> = new Map();
 	private blockedTimes: Map<string, BlockedTime> = new Map();
 	private providers: Map<string, Provider> = new Map();
+
+	async connect(): Promise<void> {
+		// No-op for memory storage
+	}
+
+	async disconnect(): Promise<void> {
+		// No-op for memory storage
+	}
+
+	async saveAppointment(appointment: Appointment): Promise<Appointment> {
+		this.appointments.set(appointment.id, appointment);
+		return appointment;
+	}
+
+	async getAppointment(id: string): Promise<Appointment | null> {
+		return this.appointments.get(id) ?? null;
+	}
+
+	async getAllAppointments(providerId?: string): Promise<Appointment[]> {
+		const appointments = Array.from(this.appointments.values());
+		if (providerId) {
+			return appointments.filter(a => a.providerId === providerId);
+		}
+		return appointments;
+	}
+
+	async updateAppointment(id: string, updates: Partial<Appointment>): Promise<Appointment> {
+		const existing = this.appointments.get(id);
+		if (!existing) throw new Error(`Appointment ${id} not found`);
+
+		const updated = { ...existing, ...updates };
+		this.appointments.set(id, updated);
+		return updated;
+	}
+
+	async deleteAppointment(id: string): Promise<void> {
+		this.appointments.delete(id);
+	}
+
+	async saveBlockedTime(blockedTime: BlockedTime): Promise<BlockedTime> {
+		this.blockedTimes.set(blockedTime.id, blockedTime);
+		return blockedTime;
+	}
+
+	async getAllBlockedTimes(providerId?: string): Promise<BlockedTime[]> {
+		const blocks = Array.from(this.blockedTimes.values());
+		if (providerId) {
+			return blocks.filter(b => b.providerId === providerId);
+		}
+		return blocks;
+	}
+
+	async deleteBlockedTime(id: string): Promise<void> {
+		this.blockedTimes.delete(id);
+	}
+
+	async saveProvider(provider: Provider): Promise<Provider> {
+		this.providers.set(provider.id, provider);
+		return provider;
+	}
+
+	async getProvider(id: string): Promise<Provider | null> {
+		return this.providers.get(id) ?? null;
+	}
+
+	async getAllProviders(): Promise<Provider[]> {
+		return Array.from(this.providers.values());
+	}
+
+	async deleteProvider(id: string): Promise<void> {
+		this.providers.delete(id);
+	}
+
+	async clear(): Promise<void> {
+		this.appointments.clear();
+		this.blockedTimes.clear();
+		this.providers.clear();
+	}
+}
+
+/**
+ * Stateful scheduler for managing appointments, availability, and providers
+ * Supports both in-memory and persistent storage via StorageAdapter
+ */
+export class Scheduler {
+	private storage: StorageAdapter;
 	private defaultIncrement: number = 15;
+	private initialized: boolean = false;
 
 	constructor(config: SchedulerConfig = {}) {
-		// Initialize appointments
-		if (config.appointments) {
-			config.appointments.forEach(apt => {
-				this.appointments.set(apt.id, apt);
-			});
-		}
-
-		// Initialize blocked times
-		if (config.blockedTimes) {
-			config.blockedTimes.forEach(block => {
-				this.blockedTimes.set(block.id, block);
-			});
-		}
-
-		// Initialize providers
-		if (config.providers) {
-			config.providers.forEach(provider => {
-				this.providers.set(provider.id, provider);
-			});
-		}
+		// Use provided storage adapter or fall back to in-memory
+		this.storage = config.storage ?? new MemoryStorageAdapter();
 
 		// Set default increment
 		if (config.defaultIncrement) {
@@ -46,10 +116,31 @@ export class Scheduler {
 		}
 	}
 
+	/**
+	 * Initialize the scheduler (connects storage adapter)
+	 * Must be called before using the scheduler
+	 */
+	async initialize(): Promise<void> {
+		if (!this.initialized) {
+			await this.storage.connect();
+			this.initialized = true;
+		}
+	}
+
+	/**
+	 * Clean up resources (closes storage connection)
+	 */
+	async cleanup(): Promise<void> {
+		if (this.initialized) {
+			await this.storage.disconnect();
+			this.initialized = false;
+		}
+	}
+
     /**
      * Find available time slots for booking
      */
-    findAvailableSlots(options: FindSlotsOptions): TimeSlot[] {
+    async findAvailableSlots(options: FindSlotsOptions): Promise<TimeSlot[]> {
         const increment = options.incrementMinutes ?? this.defaultIncrement;
         const usableDuration = options.duration.totalMinutes - (options.duration.bufferMinutes ?? 0);
         
@@ -57,7 +148,8 @@ export class Scheduler {
             return [];
         }
 
-        const allProviders = Array.from(this.providers.values());
+        // Get all providers or filter to specific ones
+        const allProviders = await this.storage.getAllProviders();
         const availableProviders = options.providerIds 
             ? allProviders.filter(p => options.providerIds!.includes(p.id))
             : allProviders;
@@ -65,6 +157,10 @@ export class Scheduler {
         if (availableProviders.length === 0) {
             return [];
         }
+
+        // Get all appointments and blocked times
+        const appointments = await this.storage.getAllAppointments();
+        const blockedTimes = await this.storage.getAllBlockedTimes();
 
         const slots: TimeSlot[] = [];
         let current = new Date(options.startDate);
@@ -77,7 +173,7 @@ export class Scheduler {
 
             const validProviders = availableProviders.filter(provider => {
                 // Check appointments (provider-specific or global)
-                for (const apt of this.appointments.values()) {
+                for (const apt of appointments) {
                     if (apt.providerId !== provider.id && apt.providerId !== undefined) continue;
                     const aptStart = new Date(apt.startTime);
                     const aptEnd = new Date(apt.endTime);
@@ -85,7 +181,7 @@ export class Scheduler {
                 }
 
                 // Check blocked times (provider-specific or global)
-                for (const block of this.blockedTimes.values()) {
+                for (const block of blockedTimes) {
                     if (block.providerId !== provider.id && block.providerId !== undefined) continue;
                     const blockStart = new Date(block.startTime);
                     const blockEnd = new Date(block.endTime);
@@ -112,7 +208,7 @@ export class Scheduler {
 	/**
 	 * Create a new appointment
 	 */
-	createAppointment(options: CreateAppointmentOptions): Appointment {
+	async createAppointment(options: CreateAppointmentOptions): Promise<Appointment> {
 		const id = this.generateId();
 		const endTime = this.calculateEndTime(options.startTime, options.duration);
 
@@ -124,33 +220,31 @@ export class Scheduler {
 			metadata: options.metadata,
 		};
 
-		this.appointments.set(id, appointment);
-		return appointment;
+		return this.storage.saveAppointment(appointment);
 	}
 
 	/**
 	 * Get an appointment by ID
 	 */
-	getAppointment(id: string): Appointment | undefined {
-		return this.appointments.get(id);
+	async getAppointment(id: string): Promise<Appointment | null> {
+		return this.storage.getAppointment(id);
 	}
 
 	/**
 	 * Get all appointments
 	 */
-	getAllAppointments(): Appointment[] {
-		return Array.from(this.appointments.values());
+	async getAllAppointments(providerId?: string): Promise<Appointment[]> {
+		return this.storage.getAllAppointments(providerId);
 	}
 
 	/**
 	 * Update an existing appointment
 	 */
-	updateAppointment(id: string, options: UpdateAppointmentOptions): Appointment | null {
-		const existing = this.appointments.get(id);
+	async updateAppointment(id: string, options: UpdateAppointmentOptions): Promise<Appointment | null> {
+		const existing = await this.storage.getAppointment(id);
 		if (!existing) return null;
 
-		const updated: Appointment = {
-			...existing,
+		const updates: Partial<Appointment> = {
 			startTime: options.startTime ?? existing.startTime,
 			providerId: options.providerId ?? existing.providerId,
 			metadata: options.metadata ?? existing.metadata,
@@ -161,63 +255,68 @@ export class Scheduler {
 			const duration = options.duration ?? {
 				totalMinutes: this.calculateDurationMinutes(existing.startTime, existing.endTime),
 			};
-			updated.endTime = this.calculateEndTime(updated.startTime, duration);
+			updates.endTime = this.calculateEndTime(updates.startTime!, duration);
 		}
 
-		this.appointments.set(id, updated);
-		return updated;
+		return this.storage.updateAppointment(id, updates);
 	}
 
 	/**
 	 * Delete an appointment
 	 */
-	deleteAppointment(id: string): boolean {
-		return this.appointments.delete(id);
+	async deleteAppointment(id: string): Promise<void> {
+		await this.storage.deleteAppointment(id);
 	}
 
 	/**
 	 * Add a blocked time period
 	 */
-	addBlockedTime(block: Omit<BlockedTime, 'id'>): BlockedTime {
+	async addBlockedTime(block: Omit<BlockedTime, 'id'>): Promise<BlockedTime> {
 		const id = this.generateId();
 		const blockedTime: BlockedTime = { id, ...block };
-		this.blockedTimes.set(id, blockedTime);
-		return blockedTime;
+		return this.storage.saveBlockedTime(blockedTime);
 	}
 
 	/**
 	 * Remove a blocked time period
 	 */
-	removeBlockedTime(id: string): boolean {
-		return this.blockedTimes.delete(id);
+	async removeBlockedTime(id: string): Promise<void> {
+		await this.storage.deleteBlockedTime(id);
 	}
 
 	/**
 	 * Get all blocked times
 	 */
-	getAllBlockedTimes(): BlockedTime[] {
-		return Array.from(this.blockedTimes.values());
+	async getAllBlockedTimes(providerId?: string): Promise<BlockedTime[]> {
+		return this.storage.getAllBlockedTimes(providerId);
 	}
 
 	/**
 	 * Add a provider
 	 */
-	addProvider(provider: Provider): void {
-		this.providers.set(provider.id, provider);
+	async addProvider(provider: Provider): Promise<void> {
+		await this.storage.saveProvider(provider);
 	}
 
 	/**
 	 * Remove a provider
 	 */
-	removeProvider(id: string): boolean {
-		return this.providers.delete(id);
+	async removeProvider(id: string): Promise<void> {
+		await this.storage.deleteProvider(id);
 	}
 
 	/**
 	 * Get all providers
 	 */
-	getAllProviders(): Provider[] {
-		return Array.from(this.providers.values());
+	async getAllProviders(): Promise<Provider[]> {
+		return this.storage.getAllProviders();
+	}
+
+	/**
+	 * Get a specific provider by ID
+	 */
+	async getProvider(id: string): Promise<Provider | null> {
+		return this.storage.getProvider(id);
 	}
 
 	/**
