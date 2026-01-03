@@ -78,7 +78,7 @@ scheduler.deleteAppointment(appointment.id)
 
 - `findAvailableSlots(options)` - Find available time slots
 - `createAppointment(options)` - Create new appointment
-- `getAppointment(id)` - Get appointment by ID
+- `getAppointment(id)` - Get appointment by id
 - `getAllAppointments()` - Get all appointments
 - `updateAppointment(id, options)` - Update appointment
 - `deleteAppointment(id)` - Delete appointment
